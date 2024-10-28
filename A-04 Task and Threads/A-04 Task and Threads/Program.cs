@@ -36,14 +36,20 @@ namespace A_04_Task_and_Threads
                 using (var fileCreation = new System.IO.FileStream(fileName, System.IO.FileMode.Create, System.IO.FileAccess.Write))
                 using (var writeOnFile = new System.IO.StreamWriter(fileCreation))
                 {
-                    char data = 'A';
+                    byte data = (byte)'A';
                     int bytesWritten = 0;
 
                     while(bytesWritten < fileSize)
                     {
-
+                        fileCreation.WriteByte(data);
+                        bytesWritten += 1;
                     }
                 }
+                Console.WriteLine("File created successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating the file: {ex.Message}");
             }
         }
     }
