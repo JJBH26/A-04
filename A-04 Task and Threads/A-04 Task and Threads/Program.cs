@@ -61,6 +61,14 @@ namespace A_04_Task_and_Threads
             Random random = new Random();
             byte[] data = new byte[36];
 
+            using(FileStream stream = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.None))
+            {
+                while(stream.Length < maxSize)
+                {
+                    random.NextBytes(data);
+                    stream.Write(data, 0, data.Length);
+                }
+            }
         }
     }
 }
