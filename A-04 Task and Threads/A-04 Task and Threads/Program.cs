@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,20 +31,36 @@ namespace A_04_Task_and_Threads
 
             if (File.Exists(fileName))
             {
-                Console.WriteLine($"File: {fileName}");
+                Console.WriteLine($"The file: {fileName}, already exists. \nYou want to overrided it (yes 'y', no 'n')");
                 string response = Console.ReadLine();
                 if (response?.ToLower() != "y")
                 {
                     Console.WriteLine("Operation canceled");
                     return;
                 }
+                else if(response?.ToLower() != "no")
+                {
+                    File.Delete(fileName);
+                }
+                else { Console.WriteLine("You didnt select neither of the options, exiting of the program"); }
             }
 
             Console.WriteLine($"Filename: {fileName}");
             Console.WriteLine($"File Size: {fileSize}");
             Console.WriteLine($"Number of Tasks: {numTask}");
 
-          
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < numTask; i++)
+            {
+                tasks.Add(Task.Run(() => WriteRandomData(fileName, fileSize)));
+            }
+        }
+
+        static void WriteRandomData(string fileName, int maxSize)
+        {
+            Random random = new Random();
+            byte[] data = new byte[36];
+
         }
     }
 }
