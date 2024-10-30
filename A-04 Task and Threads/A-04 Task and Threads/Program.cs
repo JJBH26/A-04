@@ -18,12 +18,12 @@ namespace A_04_Task_and_Threads
             }
 
             string fileName = args[0];
-            if(!int.TryParse(args[1], out int fileSize) || fileSize <= 1000 || fileSize >=20000000) 
+            if(!int.TryParse(args[1], out int fileSize) || fileSize < 1000 || fileSize > 20000000) 
             {
                 Console.WriteLine("Invalid Size\nGive a number between 1000 and 20,000,000");
                 return;
             }
-            if (!int.TryParse(args[2], out int numTask) || numTask <= 1 || numTask >= 25)
+            if (!int.TryParse(args[2], out int numTask) || numTask < 1 || numTask > 25)
             {
                 Console.WriteLine("Invalid Task number\nGive a number between 1 and 25");
                 return;
@@ -68,6 +68,27 @@ namespace A_04_Task_and_Threads
                     random.NextBytes(data);
                     stream.Write(data, 0, data.Length);
                 }
+            }
+        }
+
+        internal void FileOperation()
+        {
+            try
+            {
+                //open File
+
+                //Process file
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                //test if file is open
+                //and if so, close file
+                //Finally is used only if we need to close the file
             }
         }
     }
