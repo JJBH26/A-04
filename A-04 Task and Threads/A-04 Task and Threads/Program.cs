@@ -38,7 +38,7 @@ namespace A_04_Task_and_Threads
                     Console.WriteLine("Operation canceled");
                     return;
                 }
-                else if(response?.ToLower() != "no")
+                else if(response?.ToLower() != "n")
                 {
                     File.Delete(fileName);
                 }
@@ -47,13 +47,26 @@ namespace A_04_Task_and_Threads
 
             Console.WriteLine($"Filename: {fileName}");
             Console.WriteLine($"File Size: {fileSize}");
-            Console.WriteLine($"Number of Tasks: {numTask}");
+            Console.WriteLine($"Number of Tasks: {numTask}\n");
 
+            Console.WriteLine($"Starting to write to file: {fileName}");
+            StartTask(fileName, fileSize, numTask);
+        }
+
+        static void StartTask(string fileName, int maxSize, int numTask)
+        {
             List<Task> tasks = new List<Task>();
-            for (int i = 0; i < numTask; i++)
+
+            for(int i = 0; i < numTask; i++)
             {
-                tasks.Add(Task.Run(() => FileOperation(fileName, fileSize)));
-            }
+                tasks.Add(Task.Run(() => FileOperation(fileName, maxSize)));
+            } 
+
+            Task monitorTask = Task.Run(() => MonitorFileSize(fileName, maxSize, tasks));
+            tasks.Add(monitorTask);
+
+            Task.WaitAll(tasks.ToArray());
+            Console.WriteLine("All task completed");
         }
 
         private static void WriteRandomData(FileStream fileStream, int maxSize)
