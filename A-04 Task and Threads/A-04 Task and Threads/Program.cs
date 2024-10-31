@@ -71,24 +71,31 @@ namespace A_04_Task_and_Threads
             }
         }
 
-        internal void FileOperation()
+        internal void FileOperation(string filename, Action<FileStream> processFileAction)
         {
+            FileStream fileStream = null;
+
             try
             {
-                //open File
+                //open file
+               fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read);
 
                 //Process file
-
+                processFileAction(fileStream);  
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine($"Unexpected error: {ex.Message}");
             }
-            finally
+            finally //Finally is used only if we need to close the file
             {
-                //test if file is open
-                //and if so, close file
-                //Finally is used only if we need to close the file
+                //test if file is open, and if so, close file
+                if ( fileStream != null )
+                {
+                    fileStream.Close();
+                    Console.WriteLine("File closed successfully");
+                }
+               
             }
         }
     }
