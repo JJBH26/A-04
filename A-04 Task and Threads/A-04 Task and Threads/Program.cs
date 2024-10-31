@@ -86,6 +86,24 @@ namespace A_04_Task_and_Threads
             
         }
 
+        static void MonitorFileSize(string fileName, int maxSize, List<Task> tasks)
+        {
+            while(true)
+            {
+                long fileSize = new FileInfo(fileName).Length;
+                Console.WriteLine($"Current file Size: {fileSize} bytes");
+
+                if(fileSize >= maxSize)
+                {
+                    Console.WriteLine("Target file size reached.");
+                    break;
+                }
+                Task.Delay(1000).Wait();
+            }
+            tasks.ForEach(task => task.Dispose());
+            Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
+        }
+
         internal static void FileOperation(string filename, int maxSize)
         {
             FileStream fileStream = null;
