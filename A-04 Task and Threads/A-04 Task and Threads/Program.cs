@@ -52,26 +52,28 @@ namespace A_04_Task_and_Threads
             List<Task> tasks = new List<Task>();
             for (int i = 0; i < numTask; i++)
             {
-                tasks.Add(Task.Run(() => WriteRandomData(fileName, fileSize)));
+                tasks.Add(Task.Run(() => FileOperation(fileName, fileSize)));
             }
         }
 
-        static void WriteRandomData(string fileName, int maxSize)
+        private static void WriteRandomData(FileStream fileStream, int maxSize)
         {
             Random random = new Random();
-            byte[] data = new byte[36];
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            byte[] buffer = new byte[36];
 
-            using(FileStream stream = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.None))
+            for(int i = 0; i < maxSize;i++)
             {
-                while(stream.Length < maxSize)
+                for(int j = 0; j < maxSize; j++)
                 {
-                    random.NextBytes(data);
-                    stream.Write(data, 0, data.Length);
+                    buffer[j] = (byte)chars[random.Next(chars.Length)];
                 }
+                fileStream.Write(buffer, 0, buffer.Length);
             }
+            
         }
 
-        internal void FileOperation(string filename, Action<FileStream> processFileAction)
+        internal static void FileOperation(string filename, int maxSize)
         {
             FileStream fileStream = null;
 
@@ -81,8 +83,8 @@ namespace A_04_Task_and_Threads
                fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read);
 
                 //Process file
-                processFileAction(fileStream);  
-            }
+                WriteRandomData(fileStream, maxSize);
+            }   
             catch (Exception ex)
             {
                 Console.WriteLine($"Unexpected error: {ex.Message}");
@@ -90,12 +92,8 @@ namespace A_04_Task_and_Threads
             finally //Finally is used only if we need to close the file
             {
                 //test if file is open, and if so, close file
-                if ( fileStream != null )
-                {
-                    fileStream.Close();
-                    Console.WriteLine("File closed successfully");
-                }
-               
+                fileStream.Close();
+                Console.WriteLine("File closed successfully");
             }
         }
     }
