@@ -11,6 +11,7 @@ namespace A_04_Task_and_Threads
     internal class Program
     {
         private static CancellationTokenSource cts = new CancellationTokenSource();
+        private static readonly object fileLock = new object();
         static void Main(string[] args)
         {
             if(args.Length < 3) 
@@ -131,12 +132,16 @@ namespace A_04_Task_and_Threads
         {
             try
             {
-                //open file
-                using (FileStream fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read))
+                lock (fileLock)
                 {
-                    //Process file
-                    WriteRandomData(fileStream, maxSize);
+                    //open file
+                    using (FileStream fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read))
+                    {
+                        //Process file
+                        WriteRandomData(fileStream, maxSize);
+                    }
                 }
+                
             }
             catch (OperationCanceledException)
             {
