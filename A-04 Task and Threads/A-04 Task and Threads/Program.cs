@@ -51,8 +51,11 @@ namespace A_04_Task_and_Threads
             Console.WriteLine($"Filename: {fileName}");
             Console.WriteLine($"File Size: {fileSize}");
             Console.WriteLine($"Number of Tasks: {numTask}\n");
-
+            
             Console.WriteLine($"Starting to write to file: {fileName}\n");
+
+            Task monitorTask = Task.Run(() => MonitorFileSize(fileName, fileSize));
+
             StartTask(fileName, fileSize, numTask);
 
             Action job = () => FileOperation(fileName, fileSize, cts.Token);
@@ -68,6 +71,7 @@ namespace A_04_Task_and_Threads
             cts.Cancel();
 
         }
+
 
         static void StartTask(string fileName, int maxSize, int numTask)
         {
@@ -99,13 +103,14 @@ namespace A_04_Task_and_Threads
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             byte[] buffer = new byte[36];
 
-            for(int i = 0; i < maxSize;i++)
+            for(int i = 0; i < maxSize / buffer.Length;i++)
             {
                 for(int j = 0; j < buffer.Length; j++)
                 {
                     buffer[j] = (byte)chars[random.Next(chars.Length)];
                 }
                 fileStream.Write(buffer, 0, buffer.Length);
+                Task.Delay(100).Wait();
             }
             
         }
