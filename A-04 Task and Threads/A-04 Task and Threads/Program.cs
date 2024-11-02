@@ -56,6 +56,11 @@ namespace A_04_Task_and_Threads
 
             Action job = () => FileOperation(fileName, fileSize, cts.Token);
 
+            Task task1 = Task.Factory.StartNew(job, cts.Token);
+            Task task2 = Task.Factory.StartNew(job, cts.Token);
+            Task task3 = Task.Factory.StartNew(job, cts.Token);
+
+
             Console.WriteLine("Press any key to cancel the tasks...");
             Console.ReadKey();
 
@@ -65,18 +70,26 @@ namespace A_04_Task_and_Threads
 
         static void StartTask(string fileName, int maxSize, int numTask)
         {
-            List<Task> tasks = new List<Task>();
-
+            Task monitorTask = Task.Run(() => MonitorFileSize(fileName, maxSize));
             for(int i = 0; i < numTask; i++)
             {
-                tasks.Add(Task.Run(() => FileOperation(fileName, maxSize)));
+                Task currentTask = new Task(() =>
+                {
+                    FileOperation(fileName, maxSize, cts.Token);
+                }, cts.Token);
+
+                currentTask.Start();
+                try
+                {
+                    currentTask.Wait(cts.Token);
+                }
+                catch(OperationCanceledException)
+                {
+                    Console.WriteLine("Task was canceled");
+                    break;
+                }
             } 
-
-            Task monitorTask = Task.Run(() => MonitorFileSize(fileName, maxSize, tasks));
-            tasks.Add(monitorTask);
-
-            Task.WaitAll(tasks.ToArray());
-            Console.WriteLine("All task completed");
+            Console.WriteLine("All task completed sequentially");
         }
 
         private static void WriteRandomData(FileStream fileStream, int maxSize)
@@ -96,21 +109,21 @@ namespace A_04_Task_and_Threads
             
         }
 
-        static void MonitorFileSize(string fileName, int maxSize, List<Task> tasks)
+        static void MonitorFileSize(string fileName, int maxSize)
         {
             while(true)
             {
-                long fileSize = new FileInfo(fileName).Length;
-                Console.WriteLine($"Current file Size: {fileSize} bytes");
+                long currentSize = new FileInfo(fileName).Length;
+                Console.WriteLine($"Current file Size: {currentSize} bytes");
 
-                if(fileSize >= maxSize)
+                if(currentSize >= maxSize)
                 {
                     Console.WriteLine("Target file size reached.");
+                    cts.Cancel();
                     break;
                 }
                 Task.Delay(1000).Wait();
             }
-            tasks.ForEach(task => task.Dispose());
             Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
         }
 
@@ -119,7 +132,7 @@ namespace A_04_Task_and_Threads
             try
             {
                 //open file
-               fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read);
+                var fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read);
 
                 //Process file
                 WriteRandomData(fileStream, maxSize);
@@ -131,7 +144,6 @@ namespace A_04_Task_and_Threads
             finally //Finally is used only if we need to close the file
             {
                 //test if file is open, and if so, close file
-                fileStream.Close();
                 Console.WriteLine("File closed successfully");
             }
         }
