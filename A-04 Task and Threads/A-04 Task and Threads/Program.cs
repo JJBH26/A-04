@@ -132,11 +132,16 @@ namespace A_04_Task_and_Threads
             try
             {
                 //open file
-                var fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read);
-
-                //Process file
-                WriteRandomData(fileStream, maxSize);
-            }   
+                using (FileStream fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read))
+                {
+                    //Process file
+                    WriteRandomData(fileStream, maxSize);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Task was Canceled");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Unexpected error: {ex.Message}");
