@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace A_04_Task_and_Threads
 {
     internal class Program
     {
+        private static CancellationTokenSource cts = new CancellationTokenSource();
         static void Main(string[] args)
         {
             if(args.Length < 3) 
@@ -42,15 +44,23 @@ namespace A_04_Task_and_Threads
                 {
                     File.Delete(fileName);
                 }
-                else { Console.WriteLine("You didnt select neither of the options, exiting of the program"); }
+                else { Console.WriteLine("You didn't select neither of the options"); }
             }
 
             Console.WriteLine($"Filename: {fileName}");
             Console.WriteLine($"File Size: {fileSize}");
             Console.WriteLine($"Number of Tasks: {numTask}\n");
 
-            Console.WriteLine($"Starting to write to file: {fileName}");
+            Console.WriteLine($"Starting to write to file: {fileName}\n");
             StartTask(fileName, fileSize, numTask);
+
+            Action job = () => FileOperation(fileName, fileSize, cts.Token);
+
+            Console.WriteLine("Press any key to cancel the tasks...");
+            Console.ReadKey();
+
+            cts.Cancel();
+
         }
 
         static void StartTask(string fileName, int maxSize, int numTask)
@@ -77,7 +87,7 @@ namespace A_04_Task_and_Threads
 
             for(int i = 0; i < maxSize;i++)
             {
-                for(int j = 0; j < maxSize; j++)
+                for(int j = 0; j < buffer.Length; j++)
                 {
                     buffer[j] = (byte)chars[random.Next(chars.Length)];
                 }
@@ -104,10 +114,8 @@ namespace A_04_Task_and_Threads
             Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
         }
 
-        internal static void FileOperation(string filename, int maxSize)
+        internal static void FileOperation(string filename, int maxSize, CancellationToken cancellationToken)
         {
-            FileStream fileStream = null;
-
             try
             {
                 //open file
