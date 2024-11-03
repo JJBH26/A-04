@@ -45,7 +45,6 @@ namespace A_04_Task_and_Threads
                 {
                     File.Delete(fileName);
                 }
-                else { Console.WriteLine("You didn't select neither of the options"); }
             }
 
             Console.WriteLine($"Filename: {fileName}");
@@ -58,37 +57,36 @@ namespace A_04_Task_and_Threads
 
             StartTask(fileName, fileSize, numTask);
 
-            Action job = () => FileOperation(fileName, fileSize, cts.Token);
-
-            Task task1 = Task.Factory.StartNew(job, cts.Token);
-            Task task2 = Task.Factory.StartNew(job, cts.Token);
-            Task task3 = Task.Factory.StartNew(job, cts.Token);
-
-
             Console.WriteLine("Press any key to cancel the tasks...");
             Console.ReadKey();
 
             cts.Cancel();
+
+            monitorTask.Wait();
 
         }
 
 
         static void StartTask(string fileName, int maxSize, int numTask)
         {
-            Task monitorTask = Task.Run(() => MonitorFileSize(fileName, maxSize));
+            List<Task> tasks = new List<Task>();
+
             for(int i = 0; i < numTask; i++)
             {
-                try
+                tasks.Add(Task.Factory.StartNew(() =>
                 {
-                    FileOperation(fileName, maxSize, cts.Token);
-                }
-                catch(OperationCanceledException)
-                {
-                    Console.WriteLine("Task was canceled");
-                    break;
-                }
-            } 
-            monitorTask.Wait();
+                    try
+                    {
+                        FileOperation(fileName, maxSize, cts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Console.WriteLine("Task was canceled");
+                    }
+                }, cts.Token));
+
+                tasks[i].Wait();
+            }
             Console.WriteLine("All task completed sequentially");
         }
 
@@ -105,6 +103,7 @@ namespace A_04_Task_and_Threads
                     buffer[j] = (byte)chars[random.Next(chars.Length)];
                 }
                 fileStream.Write(buffer, 0, buffer.Length);
+
                 Task.Delay(100).Wait();
             }
             
@@ -124,14 +123,17 @@ namespace A_04_Task_and_Threads
                         continue;
                     }
                     long currentSize = new FileInfo(fileName).Length;
-                    Console.WriteLine($"Current file Size: {currentSize} bytes");
 
-                    if (currentSize >= maxSize)
+                    lock (fileLock)
                     {
-                        Console.WriteLine("Target file size reached.");
-                        targetReached = true;
-                        cts.Cancel();
-                        break;
+                        Console.WriteLine($"Current file Size: {currentSize} bytes");
+                        if (currentSize >= maxSize)
+                        {
+                            Console.WriteLine("Target file size reached.");
+                            targetReached = true;
+                            cts.Cancel();
+                            break;
+                        }
                     }
                     Task.Delay(1000).Wait();
                 }
@@ -161,7 +163,7 @@ namespace A_04_Task_and_Threads
                     using (FileStream fileStream = new FileStream(filename, FileMode.Append, FileAccess.Write, FileShare.Read))
                     {
                         //Process file
-                        WriteRandomData(fileStream, maxSize);
+                          WriteRandomData(fileStream , maxSize);
                     }
                 }
                 
