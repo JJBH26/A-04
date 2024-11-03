@@ -78,15 +78,9 @@ namespace A_04_Task_and_Threads
             Task monitorTask = Task.Run(() => MonitorFileSize(fileName, maxSize));
             for(int i = 0; i < numTask; i++)
             {
-                Task currentTask = new Task(() =>
-                {
-                    FileOperation(fileName, maxSize, cts.Token);
-                }, cts.Token);
-
-                currentTask.Start();
                 try
                 {
-                    currentTask.Wait(cts.Token);
+                    FileOperation(fileName, maxSize, cts.Token);
                 }
                 catch(OperationCanceledException)
                 {
@@ -181,7 +175,7 @@ namespace A_04_Task_and_Threads
                 Console.WriteLine($"Unexpected error: {ex.Message}");
             }
             finally //Finally is used only if we need to close the file
-            {
+            {   
                 //test if file is open, and if so, close file
                 Console.WriteLine("File closed successfully");
             }
