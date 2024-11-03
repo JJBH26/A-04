@@ -118,7 +118,9 @@ namespace A_04_Task_and_Threads
 
         static void MonitorFileSize(string fileName, int maxSize)
         {
-            while(true)
+            bool targetReached = false;
+
+            while(!targetReached)
             {
                 try
                 {
@@ -133,6 +135,7 @@ namespace A_04_Task_and_Threads
                     if (currentSize >= maxSize)
                     {
                         Console.WriteLine("Target file size reached.");
+                        targetReached = true;
                         cts.Cancel();
                         break;
                     }
@@ -148,7 +151,10 @@ namespace A_04_Task_and_Threads
                     break;
                 }
             }
-            Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
+            if (targetReached)
+            {
+                Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
+            }
         }
 
         internal static void FileOperation(string filename, int maxSize, CancellationToken cancellationToken)
