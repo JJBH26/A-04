@@ -94,6 +94,7 @@ namespace A_04_Task_and_Threads
                     break;
                 }
             } 
+            monitorTask.Wait();
             Console.WriteLine("All task completed sequentially");
         }
 
@@ -119,16 +120,33 @@ namespace A_04_Task_and_Threads
         {
             while(true)
             {
-                long currentSize = new FileInfo(fileName).Length;
-                Console.WriteLine($"Current file Size: {currentSize} bytes");
-
-                if(currentSize >= maxSize)
+                try
                 {
-                    Console.WriteLine("Target file size reached.");
-                    cts.Cancel();
+                    if (!File.Exists(fileName))
+                    {
+                        Task.Delay(500).Wait();
+                        continue;
+                    }
+                    long currentSize = new FileInfo(fileName).Length;
+                    Console.WriteLine($"Current file Size: {currentSize} bytes");
+
+                    if (currentSize >= maxSize)
+                    {
+                        Console.WriteLine("Target file size reached.");
+                        cts.Cancel();
+                        break;
+                    }
+                    Task.Delay(1000).Wait();
+                }
+                catch (FileNotFoundException)
+                {
+                    Task.Delay(500).Wait();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine ($"Error on file monitoring: {ex.Message}");
                     break;
                 }
-                Task.Delay(1000).Wait();
             }
             Console.WriteLine($"Final file size: {new FileInfo(fileName).Length} bytes");
         }
